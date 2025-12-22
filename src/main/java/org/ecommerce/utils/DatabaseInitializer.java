@@ -11,7 +11,8 @@ public final class DatabaseInitializer {
         createAdministradorTable();
         createProdutoTable();
         createCarrinhoTable();
-        createCarrinhoItemTable();
+        createPedidoTable();
+        createItemPedidoTable();
     }
 
     private static void createClienteTable() {
@@ -63,18 +64,37 @@ public final class DatabaseInitializer {
         DB.execute(sql);
     }
 
-    private static void createCarrinhoItemTable(){
+    private static void createPedidoTable(){
         String sql = """
-                CREATE TABLE IF NOT EXISTS carrinho_item (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    carrinhoId INTEGER NOT NULL,
-                    produtoId INTEGER NOT NULL,
-                    quantidade INTEGER NOT NULL,
-                    FOREIGN KEY (carrinhoId) REFERENCES carrinho(id),
-                    FOREIGN KEY (produtoId) REFERENCES produto(id)
-                )
+                CREATE TABLE IF NOT EXISTS pedido (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            cliente_id INTEGER NOT NULL,
+                            data_pedido TEXT NOT NULL,
+                            total REAL NOT NULL,
+                            status TEXT NOT NULL,
+                            metodo_pagamento TEXT,
+                            endereco_entrega TEXT,
+                            FOREIGN KEY (cliente_id) REFERENCES cliente(id)
+                            )
                 """;
         DB.execute(sql);
     }
+
+    private static void createItemPedidoTable(){
+        String sql = """
+                CREATE TABLE IF NOT EXISTS item_pedido (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            pedido_id INTEGER NOT NULL,
+                            produto_id INTEGER NOT NULL,
+                            quantidade INTEGER NOT NULL,
+                            preco_unitario REAL NOT NULL, -- Importante salvar o preço da época!
+                                    FOREIGN KEY (pedido_id) REFERENCES pedido(id),
+                    FOREIGN KEY (produto_id) REFERENCES produto(id)
+                            )
+                """;
+        DB.execute(sql);
+    }
+
+
 }
 
