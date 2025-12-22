@@ -19,14 +19,6 @@ public class AuthService {
         this.administradorRepository = administradorRepository;
     }
 
-    // ========== CLIENTE ==========
-
-    /**
-     * Autentica um cliente usando email e senha
-     * @param email Email do cliente
-     * @param senha Senha em texto plano
-     * @return Cliente autenticado ou null se credenciais inválidas
-     */
     public Cliente loginCliente(String email, String senha) {
         if (email == null || senha == null) {
             return null;
@@ -45,16 +37,6 @@ public class AuthService {
         return cliente;
     }
 
-    /**
-     * Registra um novo cliente
-     * @param nome Nome do cliente
-     * @param email Email do cliente (deve ser único)
-     * @param senha Senha em texto plano (será hashada)
-     * @param endereco Endereço do cliente
-     * @param telefone Telefone do cliente
-     * @return Cliente criado
-     * @throws IllegalArgumentException Se email já existe ou dados inválidos
-     */
     public Cliente registrarCliente(String nome, String email, String senha,
                                     String endereco, String telefone) {
         if (nome == null || nome.trim().isEmpty()) {
@@ -86,13 +68,6 @@ public class AuthService {
         return cliente;
     }
 
-    /**
-     * Troca a senha de um cliente
-     * @param clienteId ID do cliente
-     * @param senhaAntiga Senha atual em texto plano
-     * @param senhaNova Nova senha em texto plano
-     * @throws IllegalArgumentException Se credenciais inválidas
-     */
     public void trocarSenhaCliente(long clienteId, String senhaAntiga, String senhaNova) {
         Cliente cliente = clienteRepository.buscarClientePorId(clienteId);
 
@@ -123,14 +98,6 @@ public class AuthService {
         clienteRepository.atualizarCliente(clienteId, clienteAtualizado);
     }
 
-    // ========== ADMINISTRADOR ==========
-
-    /**
-     * Autentica um administrador usando email e senha
-     * @param email Email do administrador
-     * @param senha Senha em texto plano
-     * @return Administrador autenticado ou null se credenciais inválidas
-     */
     public Administrador loginAdministrador(String email, String senha) {
         if (email == null || senha == null) {
             return null;
@@ -149,14 +116,6 @@ public class AuthService {
         return administrador;
     }
 
-    /**
-     * Registra um novo administrador
-     * @param nome Nome do administrador
-     * @param email Email do administrador (deve ser único)
-     * @param senha Senha em texto plano (será hashada)
-     * @return Administrador criado
-     * @throws IllegalArgumentException Se email já existe ou dados inválidos
-     */
     public Administrador registrarAdministrador(String nome, String email, String senha) {
         // Validações
         if (nome == null || nome.trim().isEmpty()) {
@@ -190,13 +149,6 @@ public class AuthService {
         return administrador;
     }
 
-    /**
-     * Troca a senha de um administrador
-     * @param administradorId ID do administrador
-     * @param senhaAntiga Senha atual em texto plano
-     * @param senhaNova Nova senha em texto plano
-     * @throws IllegalArgumentException Se credenciais inválidas
-     */
     public void trocarSenhaAdministrador(long administradorId, String senhaAntiga, String senhaNova) {
         Administrador administrador = administradorRepository.buscarAdministradorPorId(administradorId);
 
@@ -225,13 +177,8 @@ public class AuthService {
         administradorRepository.atualizarAdministrador(administradorId, administradorAtualizado);
     }
 
-    // ========== MÉTODOS PRIVADOS ==========
+    //Métodos auxiliares ;)
 
-    /**
-     * Gera hash SHA-256 da senha
-     * @param senha Senha em texto plano
-     * @return Hash hexadecimal da senha
-     */
     private String hashSenha(String senha) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -252,12 +199,6 @@ public class AuthService {
         }
     }
 
-    /**
-     * Verifica se a senha digitada corresponde ao hash armazenado
-     * @param senhaDigitada Senha em texto plano
-     * @param senhaHash Hash armazenado no banco
-     * @return true se a senha corresponde, false caso contrário
-     */
     private boolean verificarSenha(String senhaDigitada, String senhaHash) {
         if (senhaDigitada == null || senhaHash == null) {
             return false;
@@ -266,11 +207,6 @@ public class AuthService {
         return hashDigitado.equals(senhaHash);
     }
 
-    /**
-     * Valida se a senha atende aos critérios mínimos
-     * @param senha Senha a ser validada
-     * @throws IllegalArgumentException Se a senha não atende aos critérios
-     */
     private void validarSenha(String senha) {
         if (senha == null || senha.isEmpty()) {
             throw new IllegalArgumentException("Senha não pode ser vazia");
@@ -281,11 +217,6 @@ public class AuthService {
         }
     }
 
-    /**
-     * Valida formato de email (validação simples)
-     * @param email Email a ser validado
-     * @return true se o email é válido, false caso contrário
-     */
     private boolean validarEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             return false;
