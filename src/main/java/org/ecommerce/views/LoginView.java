@@ -28,7 +28,7 @@ public class LoginView extends JFrame {
 
     private void configurarJanela() {
         setTitle("Login E-Commerce");
-        setSize(400, 450);
+        setSize(400, 480);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -40,13 +40,12 @@ public class LoginView extends JFrame {
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Título
-        JLabel lblTitulo = new JLabel("Bem-vindo", SwingConstants.CENTER);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
+        JLabel lblTitulo = new JLabel("Acesso ao Sistema", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblTitulo.setForeground(new Color(50, 50, 50));
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         add(lblTitulo, gbc);
 
-        // Inputs
         gbc.gridwidth = 2; gbc.gridy = 1;
         add(new JLabel("E-mail:"), gbc);
 
@@ -61,40 +60,40 @@ public class LoginView extends JFrame {
         gbc.gridy = 4;
         add(txtSenha, gbc);
 
-        // Radio Buttons
         JPanel panelTipo = new JPanel(new FlowLayout(FlowLayout.CENTER));
         radioCliente = new JRadioButton("Cliente", true);
         radioAdmin = new JRadioButton("Administrador");
+
         ButtonGroup grupo = new ButtonGroup();
         grupo.add(radioCliente);
         grupo.add(radioAdmin);
+
         panelTipo.add(radioCliente);
         panelTipo.add(radioAdmin);
 
         gbc.gridy = 5;
         add(panelTipo, gbc);
 
-        // Botão Entrar
         JButton btnEntrar = new JButton("ENTRAR");
-        btnEntrar.setBackground(new Color(70, 130, 180));
+        btnEntrar.setBackground(new Color(46, 139, 87));
         btnEntrar.setForeground(Color.WHITE);
+        btnEntrar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnEntrar.setFocusPainted(false);
         btnEntrar.addActionListener(this::executarLogin);
 
         gbc.gridy = 6; gbc.ipady = 10;
         add(btnEntrar, gbc);
 
-        // Botão Cadastro
         JButton btnCadastrar = new JButton("Criar nova conta");
         btnCadastrar.setBorderPainted(false);
         btnCadastrar.setContentAreaFilled(false);
-        btnCadastrar.setForeground(Color.BLUE);
+        btnCadastrar.setForeground(new Color(70, 130, 180));
         btnCadastrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnCadastrar.addActionListener(e -> abrirModalCadastro());
 
         gbc.gridy = 7; gbc.ipady = 0;
         add(btnCadastrar, gbc);
 
-        // Mensagem de Erro
         lblMensagem = new JLabel(" ");
         lblMensagem.setForeground(Color.RED);
         lblMensagem.setHorizontalAlignment(SwingConstants.CENTER);
@@ -117,54 +116,67 @@ public class LoginView extends JFrame {
                 if (admin != null) {
                     abrirAreaAdministrador(admin);
                 } else {
-                    lblMensagem.setText("Credenciais de Admin inválidas.");
+                    lblMensagem.setText("Admin não encontrado ou senha errada.");
                 }
             } else {
                 Cliente cliente = authService.loginCliente(email, senha);
                 if (cliente != null) {
                     abrirAreaCliente(cliente);
                 } else {
-                    lblMensagem.setText("E-mail ou senha inválidos.");
+                    lblMensagem.setText("Cliente não encontrado ou senha errada.");
                 }
             }
         } catch (Exception ex) {
-            lblMensagem.setText("Erro: " + ex.getMessage());
+            ex.printStackTrace();
+            lblMensagem.setText("Erro ao conectar no banco.");
         }
     }
 
-    // --- MÉTODOS DE NAVEGAÇÃO ---
-
     private void abrirAreaAdministrador(Administrador admin) {
-        this.dispose(); // Fecha tela de login
-
-        // AQUI: Instancie e abra a sua tela de AdminDashboardView
-        // Exemplo: new AdminDashboardView(admin).setVisible(true);
-        JOptionPane.showMessageDialog(null, "Logado como Admin: " + admin.getNome() + "\n(Abra a tela de Admin aqui)");
+        this.dispose();
+        new AdminDashboardView(admin).setVisible(true);
     }
 
     private void abrirAreaCliente(Cliente cliente) {
-        this.dispose(); // Fecha tela de login
-
-        // AQUI: Instancie e abra a sua tela de VitrineView
-        // Exemplo: new VitrineView(cliente).setVisible(true);
-        JOptionPane.showMessageDialog(null, "Logado como Cliente: " + cliente.getNome() + "\n(Abra a tela de Vitrine aqui)");
+        this.dispose();
+        JOptionPane.showMessageDialog(null, "Olá, " + cliente.getNome() + "!\n(Vitrine de Produtos em breve...)");
     }
 
     private void abrirModalCadastro() {
-        // Lógica simples de cadastro rápido apenas para teste
-        JTextField nome = new JTextField();
-        JTextField email = new JTextField();
-        JPasswordField senha = new JPasswordField();
+        JTextField txtNome = new JTextField();
+        JTextField txtEmail = new JTextField();
+        JPasswordField txtSenha = new JPasswordField();
+        JTextField txtEndereco = new JTextField();
+        JTextField txtTelefone = new JTextField();
 
-        Object[] message = {"Nome:", nome, "Email:", email, "Senha:", senha};
-        int option = JOptionPane.showConfirmDialog(this, message, "Novo Cliente", JOptionPane.OK_CANCEL_OPTION);
+        Object[] message = {
+                "Nome Completo:", txtNome,
+                "E-mail:", txtEmail,
+                "Senha:", txtSenha,
+                "Endereço de Entrega:", txtEndereco,
+                "Telefone / Celular:", txtTelefone
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Novo Cadastro de Cliente", JOptionPane.OK_CANCEL_OPTION);
 
         if (option == JOptionPane.OK_OPTION) {
             try {
-                authService.registrarCliente(nome.getText(), email.getText(), new String(senha.getPassword()), "Endereço", "0000");
-                JOptionPane.showMessageDialog(this, "Cadastrado com sucesso!");
+                if (txtNome.getText().trim().isEmpty() || txtEmail.getText().trim().isEmpty()) {
+                    throw new Exception("Nome e E-mail são obrigatórios!");
+                }
+
+                authService.registrarCliente(
+                        txtNome.getText(),
+                        txtEmail.getText(),
+                        new String(txtSenha.getPassword()),
+                        txtEndereco.getText(),
+                        txtTelefone.getText()
+                );
+
+                JOptionPane.showMessageDialog(this, "Conta criada com sucesso! Faça login.");
+
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Erro ao cadastrar: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -176,15 +188,6 @@ public class LoginView extends JFrame {
             ClienteRepositoryImpl clienteRepo = new ClienteRepositoryImpl();
             AdministradorRepositoryImpl adminRepo = new AdministradorRepositoryImpl();
             AuthService auth = new AuthService(clienteRepo, adminRepo);
-
-            // Garante dados mínimos para teste sem logs
-            try {
-                if(clienteRepo.buscarClientePorEmail("cliente@teste.com") == null)
-                    auth.registrarCliente("Cliente Teste", "cliente@teste.com", "123456", "Rua", "00");
-
-                if(adminRepo.buscarAdministradorPorEmail("admin@teste.com") == null)
-                    auth.registrarAdministrador("Admin", "admin@teste.com", "admin123");
-            } catch (Exception ignored) {}
 
             new LoginView(auth).setVisible(true);
         });

@@ -1,17 +1,16 @@
 package org.ecommerce.modules.produto.repository;
 
 import org.ecommerce.modules.produto.Produto;
+import org.ecommerce.utils.DB;
 
 import java.util.List;
-import org.ecommerce.utils.DB;
 
 public class ProdutoRepositoryImpl implements ProdutoRepository {
 
     @Override
     public List<Produto> buscarProdutos() {
-
         return DB.query(
-                "select * from produto",
+                "SELECT * FROM produto",
                 ProdutoMapper::map
         );
     }
@@ -19,7 +18,7 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
     @Override
     public Produto buscarProdutoPorId(long id) {
         List<Produto> produtos = DB.query(
-                "select * from produto where id = ?",
+                "SELECT * FROM produto WHERE id = ?",
                 ProdutoMapper::map,
                 id
         );
@@ -29,13 +28,7 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
     @Override
     public void salvarProduto(Produto produto) {
         DB.execute(
-                " insert into produto(nome, preco, estoque, tipoProduto) " +
-                        "   values (" +
-                        "       ?, " +
-                        "       ?, " +
-                        "       ?," +
-                        "       ? " +
-                        "   ) ",
+                "INSERT INTO produto (nome, preco, estoque, tipoProduto) VALUES (?, ?, ?, ?)",
                 produto.getNome(),
                 produto.getPreco(),
                 produto.getEstoque(),
@@ -46,12 +39,7 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
     @Override
     public void atualizarProduto(long id, Produto novoProduto) {
         DB.execute(
-                " UPDATE produto SET " +
-                        "   nome = ?, " +
-                        "   preco = ?, " +
-                        "   estoque = ?, " +
-                        "   tipoProduto = ? " +
-                        " WHERE id = ? ",
+                "UPDATE produto SET nome = ?, preco = ?, estoque = ?, tipoProduto = ? WHERE id = ?",
                 novoProduto.getNome(),
                 novoProduto.getPreco(),
                 novoProduto.getEstoque(),
@@ -62,7 +50,7 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
 
     @Override
     public void deletarProdutoPorId(long id) {
-        DB.execute("Delete from where id = ?", id);
+        String sql = "DELETE FROM produto WHERE id = ?";
+        DB.execute(sql, id);
     }
-
 }
