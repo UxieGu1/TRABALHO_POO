@@ -88,8 +88,8 @@ public final class DatabaseInitializer {
                             produto_id INTEGER NOT NULL,
                             quantidade INTEGER NOT NULL,
                             preco_unitario REAL NOT NULL, -- Importante salvar o preço da época!
-                                    FOREIGN KEY (pedido_id) REFERENCES pedido(id),
-                    FOREIGN KEY (produto_id) REFERENCES produto(id)
+                            FOREIGN KEY (pedido_id) REFERENCES pedido(id),
+                            FOREIGN KEY (produto_id) REFERENCES produto(id)
                             )
                 """;
         DB.execute(sql);

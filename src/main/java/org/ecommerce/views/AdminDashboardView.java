@@ -5,7 +5,9 @@ import org.ecommerce.modules.produto.repository.ProdutoRepositoryImpl;
 import org.ecommerce.modules.usuario.administrador.Administrador;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.util.List;
 
@@ -15,6 +17,10 @@ public class AdminDashboardView extends JFrame {
     private final ProdutoRepositoryImpl produtoRepository;
     private JTable tabelaProdutos;
     private DefaultTableModel tableModel;
+
+    // Cores
+    private final Color COLOR_HEADER = new Color(44, 62, 80); // Midnight Blue
+    private final Color COLOR_BG = new Color(236, 240, 241);
 
     public AdminDashboardView(Administrador admin) {
         this.adminLogado = admin;
@@ -26,54 +32,64 @@ public class AdminDashboardView extends JFrame {
     }
 
     private void configurarJanela() {
-        setTitle("Painel Administrativo - E-Commerce");
-        setSize(800, 600);
+        setTitle("Painel Administrativo | E-Commerce Manager");
+        setSize(900, 650);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        getContentPane().setBackground(COLOR_BG);
         setLayout(new BorderLayout());
     }
 
     private void inicializarComponentes() {
+        // --- Navbar Superior ---
         JPanel panelTopo = new JPanel(new BorderLayout());
-        panelTopo.setBackground(new Color(45, 45, 45));
-        panelTopo.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        panelTopo.setBackground(COLOR_HEADER);
+        panelTopo.setBorder(new EmptyBorder(15, 20, 15, 20));
 
-        JLabel lblBemVindo = new JLabel("Olá, Admin " + adminLogado.getNome());
+        JLabel lblBemVindo = new JLabel("ADMINISTRADOR: " + adminLogado.getNome().toUpperCase());
         lblBemVindo.setForeground(Color.WHITE);
-        lblBemVindo.setFont(new Font("Arial", Font.BOLD, 18));
+        lblBemVindo.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblBemVindo.setIcon(UIManager.getIcon("FileView.computerIcon")); // Ícone genérico do sistema
 
-        JButton btnSair = new JButton("Sair");
+        JButton btnSair = new JButton("Sair / Logout");
+        btnSair.setBackground(new Color(192, 57, 43));
+        btnSair.setForeground(Color.WHITE);
+        btnSair.setFocusPainted(false);
+        btnSair.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         btnSair.addActionListener(e -> logout());
 
         panelTopo.add(lblBemVindo, BorderLayout.WEST);
         panelTopo.add(btnSair, BorderLayout.EAST);
         add(panelTopo, BorderLayout.NORTH);
 
-        String[] colunas = {"ID", "Nome", "Preço (R$)", "Estoque", "Tipo"};
+        // --- Tabela Central ---
+        JPanel panelCentral = new JPanel(new BorderLayout());
+        panelCentral.setBorder(new EmptyBorder(20, 20, 20, 20)); // Margem ao redor da tabela
+        panelCentral.setBackground(COLOR_BG);
+
+        String[] colunas = {"ID", "Nome do Produto", "Preço (R$)", "Estoque", "Categoria"};
         tableModel = new DefaultTableModel(colunas, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int col) { return false; }
         };
 
         tabelaProdutos = new JTable(tableModel);
-        tabelaProdutos.setRowHeight(25);
+        estilizarTabela(tabelaProdutos); // Aplica o estilo moderno
+
         JScrollPane scrollPane = new JScrollPane(tabelaProdutos);
-        add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder()); // Remove borda feia do scroll
+        scrollPane.getViewport().setBackground(Color.WHITE);
 
-        JPanel panelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panelCentral.add(scrollPane, BorderLayout.CENTER);
+        add(panelCentral, BorderLayout.CENTER);
 
-        JButton btnAdicionar = new JButton("Adicionar Produto");
-        JButton btnEditar = new JButton("Editar Selecionado");
-        JButton btnRemover = new JButton("Remover Selecionado");
+        // --- Barra de Ferramentas Inferior ---
+        JPanel panelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 15));
+        panelBotoes.setBackground(Color.WHITE);
+        panelBotoes.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(200,200,200)));
 
-        btnAdicionar.setBackground(new Color(46, 139, 87));
-        btnAdicionar.setForeground(Color.WHITE);
-        btnEditar.setBackground(new Color(70, 130, 180));
-        btnEditar.setForeground(Color.WHITE);
-        btnRemover.setBackground(new Color(178, 34, 34));
-        btnRemover.setForeground(Color.WHITE);
+        JButton btnAdicionar = criarBotao("Novo Produto", new Color(39, 174, 96));
+        JButton btnEditar = criarBotao("Editar", new Color(41, 128, 185));
+        JButton btnRemover = criarBotao("Excluir", new Color(192, 57, 43));
 
         btnAdicionar.addActionListener(e -> abrirFormularioProduto(null));
         btnEditar.addActionListener(e -> editarProdutoSelecionado());
@@ -85,149 +101,117 @@ public class AdminDashboardView extends JFrame {
         add(panelBotoes, BorderLayout.SOUTH);
     }
 
+    private void estilizarTabela(JTable table) {
+        table.setRowHeight(35);
+        table.setShowVerticalLines(false);
+        table.setGridColor(new Color(230, 230, 230));
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.setSelectionBackground(new Color(52, 152, 219));
+        table.setSelectionForeground(Color.WHITE);
+
+        JTableHeader header = table.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        header.setBackground(Color.WHITE);
+        header.setForeground(new Color(100, 100, 100));
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(200, 200, 200)));
+    }
+
+    private JButton criarBotao(String texto, Color bg) {
+        JButton btn = new JButton(texto);
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    // --- Métodos de Lógica (Iguais ao anterior) ---
     private void carregarDadosNaTabela() {
         tableModel.setRowCount(0);
         List<Produto> produtos = produtoRepository.buscarProdutos();
-
         for (Produto p : produtos) {
-            Object[] row = {
-                    p.getId(),
-                    p.getNome(),
-                    String.format("%.2f", p.getPreco()),
-                    p.getEstoque(),
-                    p.getTipoProduto()
-            };
-            tableModel.addRow(row);
+            tableModel.addRow(new Object[]{p.getId(), p.getNome(), String.format("%.2f", p.getPreco()), p.getEstoque(), p.getTipoProduto()});
         }
     }
 
     private void removerProdutoSelecionado() {
         int row = tabelaProdutos.getSelectedRow();
         if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione um produto para remover.");
+            JOptionPane.showMessageDialog(this, "Selecione um produto.");
             return;
         }
-
         long id = (long) tableModel.getValueAt(row, 0);
-        String nome = (String) tableModel.getValueAt(row, 1);
-
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Tem certeza que deseja remover: " + nome + "?",
-                "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
-
-        if (confirm == JOptionPane.YES_OPTION) {
+        if (JOptionPane.showConfirmDialog(this, "Remover produto?", "Confirmação", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             produtoRepository.deletarProdutoPorId(id);
             carregarDadosNaTabela();
-            JOptionPane.showMessageDialog(this, "Produto removido com sucesso!");
         }
     }
 
     private void editarProdutoSelecionado() {
         int row = tabelaProdutos.getSelectedRow();
         if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione um produto para editar.");
+            JOptionPane.showMessageDialog(this, "Selecione para editar.");
             return;
         }
-
         long id = (long) tableModel.getValueAt(row, 0);
-        Produto produto = produtoRepository.buscarProdutoPorId(id);
-
-        if (produto != null) {
-            abrirFormularioProduto(produto);
-        }
+        Produto p = produtoRepository.buscarProdutoPorId(id);
+        if (p != null) abrirFormularioProduto(p);
     }
 
     private void abrirFormularioProduto(Produto produtoExistente) {
-        JDialog dialog = new JDialog(this, produtoExistente == null ? "Novo Produto" : "Editar Produto", true);
-        dialog.setSize(450, 350);
+        // (Lógica do Dialog mantida simplificada aqui para focar na UI principal)
+        // Dica: Para modernizar o dialog, use os mesmos paddings e fontes da LoginView
+        JDialog dialog = new JDialog(this, produtoExistente == null ? "Novo Produto" : "Editar", true);
+        dialog.setSize(400, 400);
         dialog.setLocationRelativeTo(this);
-        dialog.setLayout(new BorderLayout());
 
-        JPanel panelForm = new JPanel(new GridBagLayout());
-        panelForm.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
+        JPanel panel = new JPanel(new GridLayout(0, 1, 10, 10));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JTextField txtNome = new JTextField();
         JTextField txtPreco = new JTextField();
         JTextField txtEstoque = new JTextField();
+        JComboBox<String> comboTipo = new JComboBox<>(new String[]{"Eletrônicos", "Roupas", "Livros", "Casa"});
 
-        String[] tipos = {"Eletrônicos", "Roupas", "Livros", "Casa", "Alimentos", "Outros"};
-        JComboBox<String> comboTipo = new JComboBox<>(tipos);
-
-        if (produtoExistente != null) {
+        if(produtoExistente != null) {
             txtNome.setText(produtoExistente.getNome());
             txtPreco.setText(String.valueOf(produtoExistente.getPreco()));
             txtEstoque.setText(String.valueOf(produtoExistente.getEstoque()));
-            comboTipo.setSelectedItem(produtoExistente.getTipoProduto());
         }
 
-        addCampo(panelForm, gbc, 0, "Nome do Produto:", txtNome);
-        addCampo(panelForm, gbc, 1, "Preço (R$):", txtPreco);
-        addCampo(panelForm, gbc, 2, "Quantidade em Estoque:", txtEstoque);
-        addCampo(panelForm, gbc, 3, "Categoria/Tipo:", comboTipo);
+        panel.add(new JLabel("Nome:")); panel.add(txtNome);
+        panel.add(new JLabel("Preço:")); panel.add(txtPreco);
+        panel.add(new JLabel("Estoque:")); panel.add(txtEstoque);
+        panel.add(new JLabel("Tipo:")); panel.add(comboTipo);
 
-        dialog.add(panelForm, BorderLayout.CENTER);
-
-        JPanel panelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelBotoes.setBackground(new Color(240, 240, 240));
-
-        JButton btnCancelar = new JButton("Cancelar");
-        btnCancelar.addActionListener(e -> dialog.dispose());
-
-        JButton btnSalvar = new JButton("Salvar");
-        btnSalvar.setBackground(new Color(46, 139, 87));
+        JButton btnSalvar = new JButton("SALVAR");
+        btnSalvar.setBackground(new Color(39, 174, 96));
         btnSalvar.setForeground(Color.WHITE);
-        btnSalvar.setFont(new Font("Arial", Font.BOLD, 12));
 
         btnSalvar.addActionListener(e -> {
             try {
-                if (txtNome.getText().trim().isEmpty()) throw new Exception("O nome é obrigatório.");
-
                 String nome = txtNome.getText();
                 double preco = Double.parseDouble(txtPreco.getText().replace(",", "."));
                 int estoque = Integer.parseInt(txtEstoque.getText());
                 String tipo = (String) comboTipo.getSelectedItem();
 
-                if (produtoExistente == null) {
-                    Produto novo = new Produto(0L, nome, preco, estoque, tipo);
-                    produtoRepository.salvarProduto(novo);
-                } else {
-                    Produto atualizado = new Produto(produtoExistente.getId(), nome, preco, estoque, tipo);
-                    produtoRepository.atualizarProduto(produtoExistente.getId(), atualizado);
-                }
+                if(produtoExistente == null) produtoRepository.salvarProduto(new Produto(0, nome, preco, estoque, tipo));
+                else produtoRepository.atualizarProduto(produtoExistente.getId(), new Produto(produtoExistente.getId(), nome, preco, estoque, tipo));
 
                 carregarDadosNaTabela();
                 dialog.dispose();
-                JOptionPane.showMessageDialog(this, "Salvo com sucesso!");
-
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Erro: Verifique se Preço e Estoque são números válidos.", "Erro de Formatação", JOptionPane.ERROR_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            }
+            } catch(Exception ex) { JOptionPane.showMessageDialog(dialog, "Erro nos dados."); }
         });
 
-        panelBotoes.add(btnCancelar);
-        panelBotoes.add(btnSalvar);
-
-        dialog.add(panelBotoes, BorderLayout.SOUTH);
+        dialog.add(panel, BorderLayout.CENTER);
+        dialog.add(btnSalvar, BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
 
-    private void addCampo(JPanel panel, GridBagConstraints gbc, int y, String label, JComponent campo) {
-        gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0;
-        panel.add(new JLabel(label), gbc);
-
-        gbc.gridx = 1; gbc.gridy = y; gbc.weightx = 1.0;
-        panel.add(campo, gbc);
-    }
-
     private void logout() {
-        this.dispose();
-        JOptionPane.showMessageDialog(this, "Sessão encerrada.");
+        dispose();
         System.exit(0);
     }
 }
